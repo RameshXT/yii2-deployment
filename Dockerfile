@@ -30,6 +30,6 @@ RUN chmod -R 755 /var/www/html/web
 
 RUN chown -R www-data:www-data /var/www/html
 
-EXPOSE 8000
+EXPOSE 8080
 
 CMD service php7-fpm start && nginx -g 'daemon off;'
