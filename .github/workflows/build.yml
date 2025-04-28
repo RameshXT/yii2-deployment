@@ -1,69 +1,64 @@
-name: CI/CD for EC2 Deployment
+name: Medusa CD Pipeline
 
 on:
   push:
     branches:
-      - master  # Trigger this on push to the master branch (you can change this as needed)
+      - master
 
 jobs:
-  deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the code
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: CODE CHECKOUT
+        uses: actions/checkout@v2
 
-    # Step 2: Set up SSH
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+      - name: SET UP DOCKER BUILDx
+        uses: docker/setup-buildx-action@v3
 
-    # Step 3: Clean up EC2 Docker containers and images
-    - name: Clean up containers and images
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
-          # Stop and remove all running containers
-          CONTAINERS=$(docker ps -aq)
-          if [ ! -z "$CONTAINERS" ]; then
-            docker stop $CONTAINERS
-            docker rm -f $CONTAINERS
-          fi
+      - name: LOGIN DOCKER HUB
+        run: |
+          echo "Logging into Docker Hub.."
+          echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          echo "Logged in to Docker Hub."
 
-          # Remove all Docker images
-          IMAGES=$(docker images -aq)
-          if [ ! -z "$IMAGES" ]; then
-            docker rmi -f $IMAGES
-          fi
-        EOF
+      - name: BUILD DOCKER IMAGE
+        run: |
+          IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
+          echo "Building Docker image with tag: $IMAGE_TAG"
+          docker build -t $IMAGE_TAG .
+          echo "Image build complete."
 
-    # Step 4: Pull changes from GitHub
-    - name: Pull changes from GitHub
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
-          cd /home/ec2-user/yii2-deployment || exit 0
-          git pull origin master
-        EOF
+      - name: PUSH DOCKER IMAGES..
+        run: |
+          IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
+          echo "Pushing Docker image: $IMAGE_TAG"
+          docker push "$IMAGE_TAG"
+          echo "Image pushed to Docker Hub."
 
-    # Step 5: Build the Docker image
-    - name: Build Docker image
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
-          cd /home/ec2-user/yii2-deployment || exit 0
-          docker build -t yii2 .
-        EOF
+      # Step 4: Pull changes from GitHub
+      - name: Pull changes from GitHub and manage Docker containers
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
+            cd /home/ec2-user/yii2-deployment || exit 0
+            git pull origin master
 
-    # Step 6: Run the Docker container
-    - name: Run Docker container
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
-          docker run -d -p 8080:8080 --name yii2 yii2
-        EOF
+            # Step 1: Force delete all running containers and images
+            CONTAINERS=$(docker ps -aq)
+            if [ ! -z "$CONTAINERS" ]; then
+              docker stop $CONTAINERS
+              docker rm -f $CONTAINERS
+            fi
 
-    # Step 7: Get container logs
-    - name: Get container logs
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
-          docker logs -f $(docker ps -q -f name=yii2)
-        EOF
+            IMAGES=$(docker images -aq)
+            if [ ! -z "$IMAGES" ]; then
+              docker rmi -f $IMAGES
+            fi
+
+            # Step 2: Run the new Docker container
+            IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
+            docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
+
+            # Optional: Tail logs to verify the container is running
+            docker logs -f $(docker ps -q -f name=yii2)
+          EOF
