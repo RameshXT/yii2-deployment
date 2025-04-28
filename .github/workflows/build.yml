@@ -1,9 +1,9 @@
-name: Medusa CD Pipeline
+name: Yii 2 CICD Pipeline
 
 on:
   push:
     branches:
-      - wiat
+      - master
 
 jobs:
   build_and_deploy:
@@ -11,11 +11,12 @@ jobs:
 
     steps:
       - name: CODE CHECKOUT
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: SET UP DOCKER BUILDx
         uses: docker/setup-buildx-action@v3
 
+      # CI
       - name: LOGIN DOCKER HUB
         run: |
           echo "Logging into Docker Hub.."
@@ -40,6 +41,14 @@ jobs:
           docker push "$IMAGE_TAG"
           echo "Image pushed to Docker Hub."
 
+      - name: UPDATE IMAGE TAG IN ecs.tf
+        run: |
+          IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
+          echo "Updating image tag in Docker-Compose.ym with: $IMAGE_TAG"
+          bash image-updater.sh "$IMAGE_TAG"
+          echo "ecs.tf updated successfully."
+
+      # CD
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -47,36 +56,51 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            IMAGE_TAG="${{ steps.build_and_deploy.outputs.image_tag }}"  # Dynamically reference the image tag here
+            IMAGE_TAG="${{ steps.build_and_deploy.outputs.image_tag }}"
             echo "IMAGE_TAG is: $IMAGE_TAG"
 
             set -e
-            echo "Starting to clean up and deploy..."
+            echo "Deploying new version via Docker Swarm..."
+            docker pull $IMAGE_TAG
 
-            # Step 1: Force delete all running containers
-            CONTAINERS=$(docker ps -aq)
-            if [ ! -z "$CONTAINERS" ]; then
-              echo "Stopping and removing containers..."
-              docker stop $CONTAINERS
-              docker rm -f $CONTAINERS
-            else
-              echo "No containers to remove."
-            fi
+            # Run Ansible playbook for configuration and deployment
+            ansible-playbook -i /var/www/html/yii2-app/ansible/playbook/inventory /var/www/html/yii2-app/ansible/playbook/deploy.yml --extra-vars "image_tag=$IMAGE_TAG"
+            
+            echo "Deployment complete."
 
-            # Step 2: Force delete all Docker images
-            IMAGES=$(docker images -aq)
-            if [ ! -z "$IMAGES" ]; then
-              echo "Removing Docker images..."
-              docker rmi -f $IMAGES
-            else
-              echo "No images to remove."
-            fi
 
-            # Step 3: Run the new Docker container
-            echo "Running the new Docker container with image: $IMAGE_TAG"
-            if [ -z "$IMAGE_TAG" ]; then
-              echo "ERROR: IMAGE_TAG is empty"
-              exit 1
-            fi
-            docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
-            docker logs -f $(docker ps -q -f name=yii2)
+
+
+
+
+
+
+
+
+            # # Step 1: Force delete all running containers
+            # CONTAINERS=$(docker ps -aq)
+            # if [ ! -z "$CONTAINERS" ]; then
+            #   echo "Stopping and removing containers..."
+            #   docker stop $CONTAINERS
+            #   docker rm -f $CONTAINERS
+            # else
+            #   echo "No containers to remove."
+            # fi
+
+            # # Step 2: Force delete all Docker images
+            # IMAGES=$(docker images -aq)
+            # if [ ! -z "$IMAGES" ]; then
+            #   echo "Removing Docker images..."
+            #   docker rmi -f $IMAGES
+            # else
+            #   echo "No images to remove."
+            # fi
+
+            # # Step 3: Run the new Docker container
+            # echo "Running the new Docker container with image: $IMAGE_TAG"
+            # if [ -z "$IMAGE_TAG" ]; then
+            #   echo "ERROR: IMAGE_TAG is empty"
+            #   exit 1
+            # fi
+            # docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
+            # docker logs -f $(docker ps -q -f name=yii2)

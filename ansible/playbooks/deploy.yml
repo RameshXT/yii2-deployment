@@ -1,0 +1,60 @@
+---
+- name: Setup Docker Swarm, NGINX, and Deploy Yii2 App
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Ensure Docker service is started
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Ensure Docker Compose is installed (skip if already present)
+      command: docker-compose --version
+      register: result
+      failed_when: false
+      changed_when: false
+
+    - name: Install Docker Compose if not present
+      apt:
+        name: docker-compose
+        state: present
+      when: result.rc != 0
+
+    - name: Initialize Docker Swarm (if not already done)
+      shell: "docker swarm init"
+      args:
+        creates: /etc/docker/swarm/cluster
+
+    - name: Create NGINX configuration file
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+      notify:
+        - Reload NGINX
+
+    - name: Clone or update Yii2 application repository
+      git:
+        repo: 'https://github.com/RameshXT/yii2-deployment.git'
+        dest: '/var/www/html/'
+        version: 'master'
+        update: yes
+
+    - name: Ensure the docker-compose.yml file exists
+      copy:
+        src: /var/www/html/docker-compose.yml
+        dest: /home/ubuntu/docker-compose.yml
+        mode: '0644'
+
+    - name: Deploy or update the stack using docker-compose.yml
+      shell: |
+        docker stack deploy -c /var/www/html/docker-compose.yml yii2stack
+      args:
+        creates: /etc/docker/swarm/service_yii2_app
+
+  handlers:
+    - name: Reload NGINX
+      service:
+        name: nginx
+        state: reloaded
