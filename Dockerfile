@@ -13,7 +13,6 @@ RUN apk update && apk add --no-cache \
     libxml2-dev \
     libjpeg \
     libpng \
-    libfreetype6-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-xpm \
     && docker-php-ext-install gd pdo pdo_mysql xml opcache \
     && apk del gcc libpng-dev libjpeg-turbo-dev freetype-dev libxml2-dev
