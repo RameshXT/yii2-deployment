@@ -6,12 +6,12 @@ RUN apk update && apk add --no-cache \
     git \
     libpng-dev \
     libjpeg-turbo-dev \
-    libfreetype6-dev \
+    freetype-dev \
     zip \
     libxml2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql xml opcache \
-    && apk del gcc libpng-dev libjpeg-turbo-dev libfreetype6-dev libxml2-dev
+    && apk del gcc libpng-dev libjpeg-turbo-dev freetype-dev libxml2-dev
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
