@@ -45,27 +45,33 @@ jobs:
           envs: IMAGE_TAG
           script: |
             set -e
-            echo "IMAGE_TAG is: $IMAGE_TAG"
-
+            echo "IMAGE_TAG is: $IMAGE_TAG"  # Debug line to ensure IMAGE_TAG is being passed
+      
             # Optional: Go to the project directory if needed
             # cd /home/ec2-user/yii2-deployment || exit 0
             # git pull origin master
-
+      
             # Step 1: Force delete all running containers and images
             CONTAINERS=$(docker ps -aq)
             if [ ! -z "$CONTAINERS" ]; then
               docker stop $CONTAINERS
               docker rm -f $CONTAINERS
             fi
-
+      
             IMAGES=$(docker images -aq)
             if [ ! -z "$IMAGES" ]; then
               docker rmi -f $IMAGES
             fi
-
+      
             # Step 2: Run the new Docker container
             echo "Running new container with image: $IMAGE_TAG"
+            if [ -z "$IMAGE_TAG" ]; then
+              echo "ERROR: IMAGE_TAG is empty"
+              exit 1
+            fi
             docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
-
+      
             # Optional: Tail logs to verify the container is running
             docker logs -f $(docker ps -q -f name=yii2)
+      
+      
