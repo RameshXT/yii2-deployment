@@ -29,13 +29,6 @@ jobs:
           docker build -t $IMAGE_TAG .
           echo "Image build complete."
 
-      - name: PUSH DOCKER IMAGES
-        run: |
-          IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
-          echo "Pushing Docker image: $IMAGE_TAG"
-          docker push "$IMAGE_TAG"
-          echo "Image pushed to Docker Hub."
-
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -45,7 +38,7 @@ jobs:
           script: |
             set -e
             echo "Starting to clean up and deploy..."
-
+      
             # Step 1: Force delete all running containers
             CONTAINERS=$(docker ps -aq)
             if [ ! -z "$CONTAINERS" ]; then
@@ -55,7 +48,7 @@ jobs:
             else
               echo "No containers to remove."
             fi
-
+      
             # Step 2: Force delete all Docker images
             IMAGES=$(docker images -aq)
             if [ ! -z "$IMAGES" ]; then
@@ -64,9 +57,9 @@ jobs:
             else
               echo "No images to remove."
             fi
-
+      
             # Step 3: Run the new Docker container
-            IMAGE_TAG="IMAGE_TAG"  # Replace this with the actual image tag
+            IMAGE_TAG="${{ steps.build_and_deploy.outputs.image_tag }}"  # Dynamically reference the image tag here
             echo "Running the new Docker container with image: $IMAGE_TAG"
             if [ -z "$IMAGE_TAG" ]; then
               echo "ERROR: IMAGE_TAG is empty"
