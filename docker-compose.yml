@@ -5,7 +5,7 @@ services:
     build: .
     container_name: yii2-app
     ports:
-      - "9090:9090"   # Exposes port 8080 for access outside the container
+      - "9090:9090"
     volumes:
       - .:/var/www/html
     networks:
