@@ -1,80 +1,48 @@
-on:
-  - pull_request
-  - push
+name: CI/CD for EC2 Deployment
 
-name: build
+on:
+  push:
+    branches:
+      - main  # Trigger this on push to main branch (you can change this as needed)
 
 jobs:
-  tests:
-    name: PHP ${{ matrix.php }} - ${{ matrix.os }}
+  deploy:
+    runs-on: ubuntu-latest
 
-    env:
-      extensions: dom, json, gd, imagick
-      key: cache-v1
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-
-        php:
-          - "7.4"
-          - "8.0"
-          - "8.1"
-          
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup cache environment
-        id: cache-env
-        uses: shivammathur/cache-extensions@v1
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: ${{ env.extensions }}
-          key: ${{ env.key }}
+    # Step 2: Set up SSH
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Cache extensions
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.cache-env.outputs.dir }}
-          key: ${{ steps.cache-env.outputs.key }}
-          restore-keys: ${{ steps.cache-env.outputs.key }}
+    - name: CleanUp
+      run: |
+        docker stop $(docker ps -aq) && docker rm -f $(docker ps -aq) && docker rmi -f $(docker images -aq) 
 
-      - name: Install PHP with extensions
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: ${{ env.extensions }}
-          ini-values: date.timezone='UTC'
+    # Step 3: Build Docker image
+    - name: Build Docker image
+      run: |
+        docker build -t yii2 /home/ec2-user/yii2-deployment
+
+    # Step 4: SSH into EC2, stop and remove all containers, remove images, then run the new container
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
           
-      - name: Determine composer cache directory on Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-            echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)" >> $GITHUB_ENV
+          # Build and run the new Docker container
+          docker build -t yii2 .
+          docker run -d -p 8080:8080 yii2
+          
+          # Optional: Tail logs to verify the container is running
+          docker logs -f $(docker ps -q -f name=yii2)
+        EOF
 
-      - name: Determine composer cache directory on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-            echo "COMPOSER_CACHE_DIR=~\AppData\Local\Composer" >> $GITHUB_ENV
-
-      - name: Cache dependencies installed with composer
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.cache-env.outputs.dir }}
-          key: php${{ matrix.php }}-composer-${{ matrix.dependencies }}-${{ hashFiles('**/composer.json') }}
-          restore-keys: |
-            php${{ matrix.php }}-composer-${{ matrix.dependencies }}-
-
-      - name: Install dependencies with composer php PHP [5.6 - 8.0]
-        run: composer update --prefer-dist --no-interaction --no-progress --optimize-autoloader --ansi
-
-      - name: Run tests with codeception
-        run: |
-          sed -i "s/'cookieValidationKey' => ''/'cookieValidationKey' => 'testkey'/" config/web.php
-          php -S 127.0.0.1:8080 -t public > ./runtime/yii.log 2>&1 &
-          vendor/bin/codecept run
-        shell: bash
+    # Step 5: Capture logs (optional)
+    - name: Get container logs
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} 'docker logs $(docker ps -q -f name=yii2)'
