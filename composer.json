@@ -66,9 +66,14 @@
         }
     },
     "repositories": [
-        {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
-        }
-    ]
+    {
+        "type": "composer",
+        "url": "https://asset-packagist.org"
+    },
+    {
+        "type": "vcs",
+        "url": "https://github.com/yiisoft/yii2-postgresql"
+    }
+]
+
 }
