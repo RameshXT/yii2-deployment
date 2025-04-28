@@ -17,6 +17,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN composer install --no-interaction
 
-EXPOSE 8080
+EXPOSE 9090
 
-CMD ["php", "yii", "serve", "0.0.0.0", "--port=8080"]
+CMD ["php", "yii", "serve", "0.0.0.0", "--port=9090"]
