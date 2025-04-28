@@ -3,7 +3,7 @@ name: CI/CD for EC2 Deployment
 on:
   push:
     branches:
-      - main  # Trigger this on push to main branch (you can change this as needed)
+      - master  # Trigger this on push to main branch (you can change this as needed)
 
 jobs:
   deploy:
