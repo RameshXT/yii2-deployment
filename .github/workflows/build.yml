@@ -9,9 +9,6 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
 
-    outputs:
-      image_tag: ${{ steps.build_and_deploy.outputs.image_tag }}  # Set the output for IMAGE_TAG
-
     steps:
       - name: CODE CHECKOUT
         uses: actions/checkout@v2
@@ -49,36 +46,37 @@ jobs:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          env:
-            IMAGE_TAG: ${{ steps.build_and_deploy.outputs.image_tag }}  # Pass the output as an env variable
-        script: |
-          set -e
-          echo "IMAGE_TAG is: $IMAGE_TAG"  # Reference the IMAGE_TAG environment variable
+          script: |
+            IMAGE_TAG="${{ steps.build_and_deploy.outputs.image_tag }}"  # Dynamically reference the image tag here
+            echo "IMAGE_TAG is: $IMAGE_TAG"
 
-          # Step 1: Force delete all running containers
-          CONTAINERS=$(docker ps -aq)
-          if [ ! -z "$CONTAINERS" ]; then
-            echo "Stopping and removing containers..."
-            docker stop $CONTAINERS
-            docker rm -f $CONTAINERS
-          else
-            echo "No containers to remove."
-          fi
+            set -e
+            echo "Starting to clean up and deploy..."
 
-          # Step 2: Force delete all Docker images
-          IMAGES=$(docker images -aq)
-          if [ ! -z "$IMAGES" ]; then
-            echo "Removing Docker images..."
-            docker rmi -f $IMAGES
-          else
-            echo "No images to remove."
-          fi
+            # Step 1: Force delete all running containers
+            CONTAINERS=$(docker ps -aq)
+            if [ ! -z "$CONTAINERS" ]; then
+              echo "Stopping and removing containers..."
+              docker stop $CONTAINERS
+              docker rm -f $CONTAINERS
+            else
+              echo "No containers to remove."
+            fi
 
-          # Step 3: Run the new Docker container
-          echo "Running the new Docker container with image: $IMAGE_TAG"
-          if [ -z "$IMAGE_TAG" ]; then
-            echo "ERROR: IMAGE_TAG is empty"
-            exit 1
-          fi
-          docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
-          docker logs -f $(docker ps -q -f name=yii2)
+            # Step 2: Force delete all Docker images
+            IMAGES=$(docker images -aq)
+            if [ ! -z "$IMAGES" ]; then
+              echo "Removing Docker images..."
+              docker rmi -f $IMAGES
+            else
+              echo "No images to remove."
+            fi
+
+            # Step 3: Run the new Docker container
+            echo "Running the new Docker container with image: $IMAGE_TAG"
+            if [ -z "$IMAGE_TAG" ]; then
+              echo "ERROR: IMAGE_TAG is empty"
+              exit 1
+            fi
+            docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
+            docker logs -f $(docker ps -q -f name=yii2)
