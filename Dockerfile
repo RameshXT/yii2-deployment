@@ -23,7 +23,9 @@ RUN git config --global --add safe.directory /var/www/html
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install PHP dependencies via Composer
-RUN composer install --no-interaction
+RUN composer -n validate --strict ; \
+    composer -n install --no-scripts --ignore-platform-reqs --no-dev
+
 
 # Expose port 9090
 EXPOSE 9090
