@@ -38,7 +38,7 @@ jobs:
     # Step 3: Build Docker image
     - name: Build Docker image
       run: |
-        docker build -t yii2 /home/ec2-user/yii2-deployment
+        docker build -t yii2 .
 
     # Step 4: SSH into EC2, stop and remove all containers, remove images, then run the new container
     - name: Deploy to EC2
