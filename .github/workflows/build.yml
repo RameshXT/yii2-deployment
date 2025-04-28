@@ -22,7 +22,18 @@ jobs:
 
     - name: CleanUp
       run: |
-        docker stop $(docker ps -aq) && docker rm -f $(docker ps -aq) && docker rmi -f $(docker images -aq) 
+        # Check if there are running containers and stop them
+          CONTAINERS=$(docker ps -aq)
+          if [ ! -z "$CONTAINERS" ]; then
+            docker stop $CONTAINERS
+            docker rm -f $CONTAINERS
+          fi
+
+          # Check if there are images to remove
+          IMAGES=$(docker images -aq)
+          if [ ! -z "$IMAGES" ]; then
+            docker rmi -f $IMAGES
+          fi
 
     # Step 3: Build Docker image
     - name: Build Docker image
