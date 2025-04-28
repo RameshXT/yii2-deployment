@@ -42,7 +42,7 @@ jobs:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: IMAGE_TAG
+          envs: IMAGE_TAG=${{ env.IMAGE_TAG }}  # Corrected this line for passing the environment variable
           script: |
             set -e
             echo "IMAGE_TAG is: $IMAGE_TAG"  # Debug line to ensure IMAGE_TAG is being passed
@@ -73,5 +73,4 @@ jobs:
       
             # Optional: Tail logs to verify the container is running
             docker logs -f $(docker ps -q -f name=yii2)
-      
       
