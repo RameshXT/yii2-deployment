@@ -10,7 +10,7 @@ services:
       - .:/var/www/html
     networks:
       - yii2_network
-    command: ["php", "yii", "serve", "0.0.0.0", "--port=8080"]
+    command: ["php", "yii", "serve", "0.0.0.0", "--port=9090"]
 
 networks:
   yii2_network:
