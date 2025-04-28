@@ -23,6 +23,11 @@ RUN composer install --no-dev --optimize-autoloader
 
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
+RUN chown -R www-data:www-data /app/runtime
+RUN chmod -R 755 /app/runtime
+RUN chown -R www-data:www-data /app/web
+RUN chmod -R 755 /app/web
+
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
