@@ -20,7 +20,7 @@ RUN curl -sS https://getcomposer.org/installer \
 
 # 3) copy only your Yii2 app
 WORKDIR /var/www/html
-COPY yii2-app/ /var/www/html/
+COPY ./yii2-app/ /var/www/html/
 
 # 4) install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
