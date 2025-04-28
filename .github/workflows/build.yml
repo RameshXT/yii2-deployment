@@ -29,17 +29,25 @@ jobs:
           docker build -t $IMAGE_TAG .
           echo "Image build complete."
 
-      - name: PUSH DOCKER IMAGES..
+      - name: PUSH DOCKER IMAGES
         run: |
           IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
           echo "Pushing Docker image: $IMAGE_TAG"
           docker push "$IMAGE_TAG"
           echo "Image pushed to Docker Hub."
 
-      # Step 4: Pull changes from GitHub
-      - name: Pull changes from GitHub and manage Docker containers
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: IMAGE_TAG
+          script: |
+            set -e
+            echo "IMAGE_TAG is: $IMAGE_TAG"
+
+            # Optional: Go to the project directory if needed
             # cd /home/ec2-user/yii2-deployment || exit 0
             # git pull origin master
 
@@ -56,9 +64,8 @@ jobs:
             fi
 
             # Step 2: Run the new Docker container
-            IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
+            echo "Running new container with image: $IMAGE_TAG"
             docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
 
             # Optional: Tail logs to verify the container is running
             docker logs -f $(docker ps -q -f name=yii2)
-          EOF
