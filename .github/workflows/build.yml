@@ -63,12 +63,14 @@ jobs:
             # cd /home/ec2-user/yii2-deployment && chmod +x image-updater.sh
             # cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
 
-      - name: SSH into EC2 and echo message
+      - name: SSH into EC2 and run Ansible playbook
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/yii2-deployment/nginx-reverse-proxy
-            ansible-playbook playbook.yml -i inventory.ini
+            cd /home/***/yii2-deployment/nginx-reverse-proxy
+            echo "$EC2_SSH_KEY" > /tmp/key.pem
+            chmod 600 /tmp/key.pem
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook playbook.yml -i inventory.ini --private-key=/tmp/key.pem
