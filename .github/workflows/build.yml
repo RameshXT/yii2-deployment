@@ -36,7 +36,13 @@ jobs:
 
             # # DOCKER LOGIN
              docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+            
+            # IMAGE TAG
+            IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
+            echo "Building Docker image with tag: $IMAGE_TAG"
+      
+            # DOCKER BUILD
+            docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
 
-
-            # # BUILD DOCKER IMAGE
-            docker build -t yii2-app:latest /home/ec2-user/yii2-deployment
+            # # DOCKER PUSH
+            docker push $IMAGE_TAG
