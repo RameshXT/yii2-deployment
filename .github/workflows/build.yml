@@ -36,6 +36,9 @@ jobs:
             # DOCKER LOGIN
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+            # DOCKER CLEANUP
+            cd /home/ec2-user/yii2-deployment && docker rm -f $(docker ps -aq) 2>/dev/null; docker rmi -f $(docker images -aq) 2>/dev/null; docker volume prune -f; docker network prune -f
+
             # COMPOSER INSTALL
             cd /home/ec2-user/yii2-deployment && composer install
 
