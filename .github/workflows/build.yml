@@ -24,10 +24,10 @@ jobs:
 
             if [ -d "/home/ec2-user/yii2-deployment" ]; then
               echo "Project already cloned, pulling latest changes..."
+              sudo chown -R ec2-user:ec2-user /home/ec2-user/yii2-deployment
+              sudo chmod -R 755 /home/ec2-user/yii2-deployment
               cd /home/ec2-user/yii2-deployment && git pull
             else
               echo "Project directory doesn't exist, cloning repository..."
               git clone https://github.com/RameshXT/yii2-deployment.git /home/ec2-user/yii2-deployment
             fi
-          
-
