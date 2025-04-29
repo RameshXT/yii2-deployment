@@ -6,9 +6,7 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     git \
     unzip \
-    curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd
+    && docker-php-ext-configure gd --with-freetype --with-jpeg
 
 WORKDIR /var/www/html
 
@@ -18,8 +16,11 @@ RUN git config --global --add safe.directory /var/www/html
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN composer -n validate --strict ; \
+    composer -n install --no-scripts --ignore-platform-reqs --no-dev \
+    composer install --no-scripts --no-autoloader
 
-RUN chown -R www-data:www-data /var/www/html
 
-CMD ["php", "yii"]
+    EXPOSE 9090
+
+CMD ["php", "yii", "serve", "0.0.0.0", "--port=9090"]
