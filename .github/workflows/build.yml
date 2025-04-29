@@ -39,4 +39,4 @@ jobs:
 
 
             # # BUILD DOCKER IMAGE
-            # docker build -t yii2-app:latest /home/ec2-user/yii2-deployment
+            docker build -t yii2-app:latest /home/ec2-user/yii2-deployment
