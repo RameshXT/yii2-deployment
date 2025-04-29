@@ -47,7 +47,7 @@ jobs:
           echo "Updating image tag in docker-compose.yml with: $IMAGE_TAG"
           chmod +x image-updater.sh
           bash image-updater.sh "$IMAGE_TAG"
-          echo "ecs.tf updated successfully."
+          echo "docker-compose.yml updated successfully."
 
       # CD
       - name: SSH into EC2 and deploy
@@ -65,6 +65,7 @@ jobs:
             docker pull $IMAGE_TAG
 
             # Run Ansible playbook for configuration and deployment
-            ansible-playbook -i inventory.ini ansible/playbooks/deploy.yml --extra-vars "image_tag=$IMAGE_TAG"
+            ansible-playbook -i yii2-deployment/inventory.ini yii2-deployment/ansible/playbooks/deploy.yml --extra-vars "image_tag=$IMAGE_TAG"
+
             
             echo "Deployment complete."
