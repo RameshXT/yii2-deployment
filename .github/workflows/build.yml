@@ -47,13 +47,13 @@ jobs:
             echo "Building Docker image with tag: $IMAGE_TAG"
       
             # DOCKER BUILD
-            # docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
+            docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
 
             # DOCKER PUSH
-            # docker push $IMAGE_TAG
+            docker push $IMAGE_TAG
 
             # DOCKER COMPOSE
-            # cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
+            cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
 
             # IMAGE UPDATER Docker-stack.yml
             cd cd /home/ec2-user/yii2-deployment &&  bash image-updater.sh "$IMAGE_TAG"
