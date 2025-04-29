@@ -58,13 +58,13 @@ if (YII_ENV_DEV) {
     // Enable debug and gii only in the development environment
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
-        'class' => 'yii\debug\Module',
+        // 'class' => 'yii\debug\Module',
         'allowedIPs' => ['127.0.0.1', '::1', '3.238.93.65'],
     ];
 
     $config['bootstrap'][] = 'gii';
-    $config['modules']['gii'] = [
-        'class' => 'yii\gii\Module',
+    $config['modules'] = [
+        // 'class' => 'yii\gii\Module',
         'allowedIPs' => ['127.0.0.1', '::1', '3.238.93.65'],
     ];
 }
