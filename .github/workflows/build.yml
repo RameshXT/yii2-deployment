@@ -73,5 +73,5 @@ jobs:
             echo "$EC2_SSH_KEY" > /tmp/Primary.pem
             chmod 600 /tmp/Primary.pem
             cd /home/ec2-user/yii2-deployment/nginx-reverse-proxy
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook playbook.yml -i inventory.ini --private-key=/tmp/Primary.pem -vvvv
+            ansible-playbook playbook.yml -i inventory.ini --private-key=/tmp/Primary.pem -vvvv
 
