@@ -41,10 +41,11 @@ jobs:
           docker push "$IMAGE_TAG"
           echo "Image pushed to Docker Hub."
 
-      - name: UPDATE IMAGE TAG IN ecs.tf
+      - name: UPDATE IMAGE TAG IN docker-compose.yml
         run: |
           IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
-          echo "Updating image tag in Docker-Compose.ym with: $IMAGE_TAG"
+          echo "Updating image tag in docker-compose.yml with: $IMAGE_TAG"
+          chmod +x image-updater.sh
           bash image-updater.sh "$IMAGE_TAG"
           echo "ecs.tf updated successfully."
 
@@ -67,40 +68,3 @@ jobs:
             ansible-playbook -i /var/www/html/yii2-app/ansible/playbook/inventory /var/www/html/yii2-app/ansible/playbook/deploy.yml --extra-vars "image_tag=$IMAGE_TAG"
             
             echo "Deployment complete."
-
-
-
-
-
-
-
-
-
-
-            # # Step 1: Force delete all running containers
-            # CONTAINERS=$(docker ps -aq)
-            # if [ ! -z "$CONTAINERS" ]; then
-            #   echo "Stopping and removing containers..."
-            #   docker stop $CONTAINERS
-            #   docker rm -f $CONTAINERS
-            # else
-            #   echo "No containers to remove."
-            # fi
-
-            # # Step 2: Force delete all Docker images
-            # IMAGES=$(docker images -aq)
-            # if [ ! -z "$IMAGES" ]; then
-            #   echo "Removing Docker images..."
-            #   docker rmi -f $IMAGES
-            # else
-            #   echo "No images to remove."
-            # fi
-
-            # # Step 3: Run the new Docker container
-            # echo "Running the new Docker container with image: $IMAGE_TAG"
-            # if [ -z "$IMAGE_TAG" ]; then
-            #   echo "ERROR: IMAGE_TAG is empty"
-            #   exit 1
-            # fi
-            # docker run -d -p 8080:8080 --name yii2-container $IMAGE_TAG
-            # docker logs -f $(docker ps -q -f name=yii2)
