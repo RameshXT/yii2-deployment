@@ -13,14 +13,6 @@ jobs:
       - name: CODE CHECKOUT
         uses: actions/checkout@v4
 
-      - name: Save SSH key
-        run: |
-          echo "$EC2_SSH_KEY" > ~/.ssh/Primary.pem
-          chmod 600 ~/.ssh/Primary.pem
-        shell: bash
-        env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-
       - name: SSH into EC2 and echo message
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -36,7 +28,6 @@ jobs:
               sudo chown -R ec2-user:ec2-user /home/ec2-user/yii2-deployment
               sudo chmod -R 755 /home/ec2-user/yii2-deployment
               cd /home/ec2-user/yii2-deployment
-              # Overwrite local changes and pull the latest from the master branch
               git fetch --all
               git reset --hard origin/master
             else
@@ -45,31 +36,52 @@ jobs:
             fi
 
             # DOCKER LOGIN
-            # docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
             # DOCKER CLEANUP
-            # cd /home/ec2-user/yii2-deployment && docker rm -f $(docker ps -aq) 2>/dev/null; docker rmi -f $(docker images -aq) 2>/dev/null; docker volume prune -f; docker network prune -f
+            cd /home/ec2-user/yii2-deployment && docker rm -f $(docker ps -aq) 2>/dev/null; docker rmi -f $(docker images -aq) 2>/dev/null; docker volume prune -f; docker network prune -f
 
             # COMPOSER INSTALL
-            # cd /home/ec2-user/yii2-deployment && composer install
+            cd /home/ec2-user/yii2-deployment && composer install
 
             # IMAGE TAG
             IMAGE_TAG="rameshxt/yii2:v1.0.${{ github.run_number }}"
-            # echo "Building Docker image with tag: $IMAGE_TAG"
+            echo "Building Docker image with tag: $IMAGE_TAG"
 
             # DOCKER BUILD
-            # docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
+            docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
 
             # DOCKER PUSH
-            # docker push $IMAGE_TAG
+            docker push $IMAGE_TAG
 
             # DOCKER COMPOSE
-            # cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
+            cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
 
             # IMAGE UPDATER Docker-stack.yml
-            # cd /home/ec2-user/yii2-deployment && chmod +x image-updater.sh
-            # cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
+            cd /home/ec2-user/yii2-deployment && chmod +x image-updater.sh
+            cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
+      
+      - name: Run Ansible Playbook to Trigger the Deployment
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "🟢 Running on EC2 instance"
+            
+            # Set up SSH key for Ansible
+            mkdir -p /home/ec2-user/.ssh
+            echo "${{ secrets.EC2_SSH_KEY }}" > /home/ec2-user/.ssh/Primary.pem
+            chmod 600 /home/ec2-user/.ssh/Primary.pem
+            
+            # Run Ansible Playbook for Swarm Deployment
+            # cd /home/ec2-user/yii2-deployment
+            # ansible-playbook -i inventory.ini swar-deploy.yml
 
-            # Triger
-            cd /home/ec2-user/yii2-deployment && chmod +x triger.sh
-            cd /home/ec2-user/yii2-deployment && bash triger.sh
+            # Run Ansible Playbook for Nginx Reverse Proxy
+            # cd /home/ec2-user/yii2-deployment/nginx-reverse-proxy
+            # ansible-playbook -i inventory.ini playbook.yml
+
+            echo "✅ Yii 2 Application Deployed!"

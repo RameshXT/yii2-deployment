@@ -1,0 +1,21 @@
+---
+- name: Deploy Docker Stack on Swarm Manager
+  hosts: all
+  become: yes
+
+  vars:
+    stack_name: yii2
+    stack_file_path: /home/ec2-user/yii2-deployment/Docker-stack.yml
+
+  tasks:
+    - name: Ensure Docker is installed
+      command: docker --version
+      register: docker_check
+      failed_when: docker_check.rc != 0
+      ignore_errors: false
+
+    - name: Deploy stack using docker-stack.yml
+      command: >
+        docker stack deploy
+        --compose-file {{ stack_file_path }}
+        {{ stack_name }}
