@@ -38,30 +38,30 @@ jobs:
 
 
             # DOCKER LOGIN
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+            # docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
             # DOCKER CLEANUP
-            cd /home/ec2-user/yii2-deployment && docker rm -f $(docker ps -aq) 2>/dev/null; docker rmi -f $(docker images -aq) 2>/dev/null; docker volume prune -f; docker network prune -f
+            # cd /home/ec2-user/yii2-deployment && docker rm -f $(docker ps -aq) 2>/dev/null; docker rmi -f $(docker images -aq) 2>/dev/null; docker volume prune -f; docker network prune -f
 
             # COMPOSER INSTALL
-            cd /home/ec2-user/yii2-deployment && composer install
+            # cd /home/ec2-user/yii2-deployment && composer install
 
             # IMAGE TAG
             IMAGE_TAG="rameshxt/yii2:v1.0.${{ github.run_number }}"
-            echo "Building Docker image with tag: $IMAGE_TAG"
-      
+            # echo "Building Docker image with tag: $IMAGE_TAG"
+
             # DOCKER BUILD
-            docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
+            # docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
 
             # DOCKER PUSH
-            docker push $IMAGE_TAG
+            # docker push $IMAGE_TAG
 
             # DOCKER COMPOSE
-            cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
+            # cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
 
             # IMAGE UPDATER Docker-stack.yml
-            cd /home/ec2-user/yii2-deployment && chmod +x image-updater.sh
-            cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
+            # cd /home/ec2-user/yii2-deployment && chmod +x image-updater.sh
+            # cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
 
       # Step 1: Checkout code
       - name: Checkout code
