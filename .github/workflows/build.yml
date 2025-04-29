@@ -56,5 +56,5 @@ jobs:
             cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
 
             # IMAGE UPDATER Docker-stack.yml
-            cd cd /home/ec2-user/yii2-deployment &&  bash image-updater.sh "$IMAGE_TAG"
+            cd /home/ec2-user/yii2-deployment &&  bash image-updater.sh "$IMAGE_TAG"
 
