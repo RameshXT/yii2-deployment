@@ -65,6 +65,6 @@ jobs:
             docker pull $IMAGE_TAG
 
             # Run Ansible playbook for configuration and deployment
-            ansible-playbook -i inventory.ini yii2-app/ansible/playbooks/deploy.yml --extra-vars "image_tag=$IMAGE_TAG"
+            ansible-playbook -i inventory.ini ansible/playbooks/deploy.yml --extra-vars "image_tag=$IMAGE_TAG"
             
             echo "Deployment complete."
