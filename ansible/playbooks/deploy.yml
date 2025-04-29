@@ -27,12 +27,17 @@
       args:
         creates: /etc/docker/swarm/cluster
 
+    - name: Ensure NGINX sites-available directory exists
+      file:
+        path: /etc/nginx/sites-available
+        state: directory
+        mode: '0755'
+    
     - name: Create NGINX configuration file
       template:
-        src: nginx.conf.j2
-        dest: /etc/nginx/sites-available/default
-      notify:
-        - Reload NGINX
+        src: your_nginx_template.conf.j2
+        dest: /etc/nginx/sites-available/yourapp.conf
+    
 
     - name: Clone or update Yii2 application repository
       git:

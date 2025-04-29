@@ -2,17 +2,16 @@ version: '3.8'
 
 services:
   yii2-app:
-    image: IMAGE_TAG
+    build: .
+    container_name: yii2-app
     ports:
       - "9090:9090"
+    volumes:
+      - .:/var/www/html
     networks:
       - yii2_network
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
     command: ["php", "yii", "serve", "0.0.0.0", "--port=9090"]
 
 networks:
   yii2_network:
-    driver: overlay
+    driver: bridge
