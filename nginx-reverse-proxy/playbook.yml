@@ -1,0 +1,5 @@
+- name: Set up NGINX reverse proxy to Docker Apache
+  hosts: web
+  become: yes
+  roles:
+    - nginx

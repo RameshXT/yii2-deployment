@@ -1,0 +1,18 @@
+- name: Install NGINX
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+
+- name: Deploy NGINX reverse proxy config
+  template:
+    src: apache-proxy.conf.j2
+    dest: /etc/nginx/conf.d/apache-proxy.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Reload NGINX
+  systemd:
+    name: nginx
+    state: reloaded
