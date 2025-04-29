@@ -22,7 +22,7 @@ jobs:
           script: |
             echo "Hello, I'm from inside the EC2 instance!"
 
-            # # CLONE & PULL THE PROJECT
+            # CLONE & PULL THE PROJECT
             if [ -d "/home/ec2-user/yii2-deployment" ]; then
               echo "Project already cloned, pulling latest changes..."
               sudo chown -R ec2-user:ec2-user /home/ec2-user/yii2-deployment
@@ -33,16 +33,15 @@ jobs:
               git clone https://github.com/RameshXT/yii2-deployment.git /home/ec2-user/yii2-deployment
             fi
 
+            # DOCKER LOGIN
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-            # # DOCKER LOGIN
-             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-            
             # IMAGE TAG
-            IMAGE_TAG="rameshxt/yii2:v1.0.${GITHUB_RUN_NUMBER}"
+            IMAGE_TAG="rameshxt/yii2:v1.0.${{ github.run_number }}"
             echo "Building Docker image with tag: $IMAGE_TAG"
       
             # DOCKER BUILD
             docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
 
-            # # DOCKER PUSH
-            docker push $IMAGE_TAG
+            # DOCKER PUSH
+            # docker push $IMAGE_TAG
