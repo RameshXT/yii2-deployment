@@ -49,4 +49,6 @@ jobs:
             # DOCKER PUSH
             # docker push $IMAGE_TAG
 
+            # DOCKER COMPOSE
+            cd /home/ec2-user/yii2-deployment && docker-compose up -d --build
 
