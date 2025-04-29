@@ -44,4 +44,4 @@ jobs:
             docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
 
             # DOCKER PUSH
-            # docker push $IMAGE_TAG
+            docker push $IMAGE_TAG
