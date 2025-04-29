@@ -64,4 +64,4 @@ jobs:
             cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
 
             # ANSIBLE PLAYBOOK
-            cd /home/ec2-user/yii2-deployment/nginx-reverse-proxy && ansible-playbook -i inventory.ini playbook.yml
+            cd /home/ec2-user/yii2-deployment/nginx-reverse-proxy && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini playbook.yml
