@@ -63,12 +63,27 @@ jobs:
             cd /home/ec2-user/yii2-deployment && chmod +x image-updater.sh
             cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
 
-      - name: Save EC2 SSH private key
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/Primary.pem
-          chmod 600 /tmp/Primary.pem
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run Ansible Playbook
+      # Step 2: Install Ansible
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      # Step 3: Setup SSH key for Ansible
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/Primary.pem
+          chmod 400 ~/.ssh/Primary.pem
+          # Add EC2 host to known_hosts (to avoid SSH warnings)
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # Step 4: Run Ansible playbook
+      - name: Run Ansible playbook
         run: |
           cd nginx-reverse-proxy
-          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini playbook.yml --private-key /tmp/Primary.pem
+          ansible-playbook -i inventory.ini playbook.yml --private-key ~/.ssh/Primary.pem
