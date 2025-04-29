@@ -63,13 +63,12 @@ jobs:
             cd /home/ec2-user/yii2-deployment && chmod +x image-updater.sh
             cd /home/ec2-user/yii2-deployment && bash image-updater.sh "$IMAGE_TAG"
 
-      - name: Save EC2 private key
+      - name: Save EC2 SSH private key
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > Primary.pem
-          chmod 600 Primary.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/Primary.pem
+          chmod 600 /tmp/Primary.pem
 
       - name: Run Ansible Playbook
         run: |
           cd nginx-reverse-proxy
-          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini playbook.yml --private-key ../Primary.pem
-          
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini playbook.yml --private-key /tmp/Primary.pem
