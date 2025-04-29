@@ -1,17 +1,7 @@
 ---
-- name: Set up NGINX reverse proxy to Docker Apache
-  hosts: web
-  become: yes
-  tasks:
-    - name: Install NGINX on Amazon Linux
-      package:
-        name: nginx
-        state: present
-      when: ansible_facts['distribution'] == 'Amazon'
-      
-    - name: Install NGINX on Ubuntu/Debian
-      apt:
-        name: nginx
-        state: present
-        update_cache: yes
-      when: ansible_facts['distribution'] in ['Ubuntu', 'Debian']
+# Install NGINX on Amazon Linux
+- name: Install NGINX on Amazon Linux
+  package:
+    name: nginx
+    state: present
+  when: ansible_facts['distribution'] == 'Amazon'
