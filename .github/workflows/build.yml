@@ -3,7 +3,7 @@ name: Yii 2 CICD Pipeline
 on:
   push:
     branches:
-      - pending
+      - master
 
 jobs:
   build_and_deploy:
@@ -13,23 +13,11 @@ jobs:
       - name: CODE CHECKOUT
         uses: actions/checkout@v4
 
-      # CD
-      - name: SSH into EC2 and deploy
+      - name: SSH into EC2 and echo message
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            IMAGE_TAG="${{ steps.build_and_deploy.outputs.image_tag }}"
-            echo "IMAGE_TAG is: $IMAGE_TAG"
-
-            set -e
-            echo "Deploying new version via Docker Swarm..."
-            docker pull $IMAGE_TAG
-
-            # Run Ansible playbook for configuration and deployment
-            ansible-playbook -i yii2-deployment/inventory.ini yii2-deployment/ansible/playbooks/deploy.yml --extra-vars "image_tag=$IMAGE_TAG"
-
-            
-            echo "Deployment complete."
+            echo "Hello, I'm from inside the EC2 instance!"
