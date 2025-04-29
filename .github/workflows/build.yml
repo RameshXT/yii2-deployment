@@ -86,4 +86,4 @@ jobs:
       - name: Run Ansible playbook
         run: |
           cd nginx-reverse-proxy
-          ansible-playbook -i inventory.ini playbook.yml --private-key ~/.ssh/Primary.pem
+          ansible-playbook -i inventory.ini playbook.yml --private-key ~/.ssh/Primary.pem -vvvv
