@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  yii2-app:
+    image: yii2-deployment-yii2-app:latest
+    build:
+      context: .
+    ports:
+      - "9090:9090"
+    deploy:
+      replicas: 3  # Number of replicas (instances) you want to run
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
