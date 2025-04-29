@@ -13,6 +13,14 @@ jobs:
       - name: CODE CHECKOUT
         uses: actions/checkout@v4
 
+      - name: Save SSH key
+        run: |
+          echo "$EC2_SSH_KEY" > ~/.ssh/Primary.pem
+          chmod 600 ~/.ssh/Primary.pem
+        shell: bash
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+
       - name: SSH into EC2 and echo message
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -35,7 +43,6 @@ jobs:
               echo "Project directory doesn't exist, cloning repository..."
               git clone https://github.com/RameshXT/yii2-deployment.git /home/ec2-user/yii2-deployment
             fi
-
 
             # DOCKER LOGIN
             # docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -66,16 +73,3 @@ jobs:
             # Triger
             cd /home/ec2-user/yii2-deployment && chmod +x triger.sh
             cd /home/ec2-user/yii2-deployment && bash triger.sh
-
-      # - name: Run Ansible via SSH
-      #   uses: appleboy/ssh-action@v0.1.5
-      #   with:
-      #     host: ${{ secrets.EC2_IP }}
-      #     username: ubuntu
-      #     key: ${{ secrets.EC2_SSH_KEY }}
-      #     script: |
-      #       echo "$EC2_SSH_KEY" > /tmp/Primary.pem
-      #       chmod 600 /tmp/Primary.pem
-      #       cd /home/ec2-user/yii2-deployment/nginx-reverse-proxy
-      #       ansible-playbook playbook.yml -i inventory.ini --private-key=/tmp/Primary.pem -vvvv
-
