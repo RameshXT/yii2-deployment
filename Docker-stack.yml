@@ -4,7 +4,7 @@ services:
   yii2-app:
     image: schmunk42/yii2-app-basic
     ports:
-      - "9090:9090"
+      - "8080:80"
     deploy:
       replicas: 1
       resources:
