@@ -21,3 +21,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo "Hello, I'm from inside the EC2 instance!"
+
+            if [ -d "/home/ec2-user/yii2-deployment" ]; then
+              echo "Project already cloned, pulling latest changes..."
+              cd /home/ec2-user/yii2-deployment && git pull
+            else
+              echo "Project directory doesn't exist, cloning repository..."
+              git clone https://github.com/RameshXT/yii2-deployment.git /home/ec2-user/yii2-deployment
+            fi
+          
+
