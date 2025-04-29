@@ -4,7 +4,7 @@ services:
   yii2-app:
     image: IMAGE_TAG
     ports:
-      - "8080:80"
+      - "9090:9090"
     deploy:
       replicas: 1
       resources:

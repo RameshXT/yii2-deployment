@@ -69,7 +69,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            echo "🟢 Running on EC2 instance"
+            echo "Running on EC2 instance"
             
             # Set up SSH key for Ansible
             mkdir -p /home/ec2-user/.ssh
