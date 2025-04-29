@@ -36,12 +36,17 @@ jobs:
             # DOCKER LOGIN
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+            # COMPOSER INSTALL
+            cd /home/ec2-user/yii2-deployment && composer install
+
             # IMAGE TAG
             IMAGE_TAG="rameshxt/yii2:v1.0.${{ github.run_number }}"
             echo "Building Docker image with tag: $IMAGE_TAG"
       
             # DOCKER BUILD
-            docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
+            # docker build -t $IMAGE_TAG /home/ec2-user/yii2-deployment
 
             # DOCKER PUSH
-            docker push $IMAGE_TAG
+            # docker push $IMAGE_TAG
+
+
