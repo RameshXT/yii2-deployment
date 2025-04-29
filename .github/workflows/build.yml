@@ -70,5 +70,5 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd nginx-reverse-proxy
+            cd /home/ec2-user/yii2-deployment/nginx-reverse-proxy
             ansible-playbook playbook.yml -i inventory.ini
