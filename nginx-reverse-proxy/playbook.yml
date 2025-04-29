@@ -1,5 +1,5 @@
 ---
-- name: Set up NGINX reverse proxy to Docker Apache
+- name: Set up NGINX reverse proxy to Docker swarm
   hosts: web
   become: yes
   roles:
