@@ -74,15 +74,16 @@ jobs:
             REPO_URL="https://github.com/RameshXT/yii2-deployment.git"
             TARGET_DIR="/home/ec2-user/yii2-deployment"
 
-            # Clone or update the repo
             if [ -d "$TARGET_DIR" ]; then
-              echo "Directory $TARGET_DIR exists. Pulling latest changes.."
+              echo "Directory $TARGET_DIR exists. Resetting and pulling latest changes.."
               cd "$TARGET_DIR" || exit
+              git reset --hard HEAD
               git pull origin master
             else
               echo "Directory $TARGET_DIR does not exist. Cloning repository.."
               git clone "$REPO_URL" "$TARGET_DIR"
             fi
+
 
             # Update Docker image tag in docker-compose
             echo "Updating image tag in Docker-compose.yml.."
