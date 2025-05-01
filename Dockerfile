@@ -1,17 +1,16 @@
-FROM php:8.2-cli
+FROM php:8.2-cli-alpine AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk update && apk add --no-cache \
     libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
     git \
     unzip \
     curl \
+    bash \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer --version
 
 WORKDIR /var/www/html
@@ -22,7 +21,17 @@ RUN composer install --no-dev --no-scripts --ignore-platform-reqs \
     && composer dump-autoload --optimize \
     && composer clear-cache
 
-RUN git config --global --add safe.directory /var/www/html
+FROM php:8.2-cli-alpine AS production
+
+RUN apk update && apk add --no-cache \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    bash
+
+WORKDIR /var/www/html
+
+COPY --from=builder /var/www/html /var/www/html
 
 EXPOSE 9090
 
