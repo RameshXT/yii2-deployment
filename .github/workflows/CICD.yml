@@ -34,6 +34,7 @@ jobs:
       - name: Run Ansible Playbook
         run: |
           ansible-playbook ansible/playbooks/configuration.yml -i ansible/playbooks/hosts
+          ansible-playbook ansible/playbooks/reverse-proxy.yml -i ansible/playbooks/hosts
 
       # Docker Build Push steps
       - name: Set up Docker Buildx
@@ -51,5 +52,41 @@ jobs:
           context: .
           push: true
           tags: rameshxt/yii2:v2.0.${{ github.run_number }}
-      
-      
+
+      # SSH into EC2 and deploy
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: IMAGE_TAG
+          script: |
+            set -e
+            IMAGE_TAG="rameshxt/yii2:v2.0.${{ github.run_number }}"
+            echo "IMAGE_TAG is: $IMAGE_TAG"
+
+            echo "Updating image tag in Docker-compose.yml.."
+            chmod +x ./image-updater.sh
+            ./image-updater.sh "$IMAGE_TAG"
+            echo "Docker-compose.yml updated successfully."
+
+            echo "Initializing Docker Swarm (if not already).."
+            docker swarm init || echo "Docker Swarm already initialized."
+
+            echo "Deploying stack to Docker Swarm..."
+            docker stack deploy -c Docker-compose.yml yii2-app
+
+            echo "Deployment complete. Showing service status:"
+            docker service ls
+
+            echo "🎉🎉 Congratulations! 🎉🎉"
+            echo "Yii 2 Basic application has been successfully deployed on Docker Swarm!"
+            echo ""
+            echo "    Deployment Details:"
+            echo "    Deployment Run Number: #${{ github.run_number }}"
+            echo "    Date & Time: $(date)"
+            echo "    Live now: http://${{ secrets.EC2_PUBLIC_IP }}/"
+            echo ""
+            echo "    You can access the application by clicking the URL above."
+            echo "    Enjoy the application, and happy coding! 😎"

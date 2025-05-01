@@ -1,9 +1,27 @@
 #!/bin/bash
 
-IMAGE_TAG=$1
+# Exit on error
+set -e
 
-# IMAGE UPDATER
-echo "Updating Docker-stack.yml with the new image tag: $IMAGE_TAG"
-sed -i "s|image\s*=\s*\"[^\"]*\"|image = \"$IMAGE_TAG\"|" Docker-stack.yml
+IMAGE_TAG="$1"
 
-echo "Docker-stack.yml file updated successfully with image tag: $IMAGE_TAG"
+# Validate input
+if [[ -z "$IMAGE_TAG" ]]; then
+  echo "Error: No image tag provided."
+  echo "Usage: $0 <image-tag>"
+  exit 1
+fi
+
+FILE="Docker-compose.yml"
+
+# Check if the file exists
+if [[ ! -f "$FILE" ]]; then
+  echo "Error: File $FILE not found."
+  exit 1
+fi
+
+# Update the image tag in the file
+echo "Updating $FILE with new image tag: $IMAGE_TAG"
+sed -i.bak "s|image: .*|image: $IMAGE_TAG|" "$FILE"
+
+echo "$FILE updated successfully with image tag: $IMAGE_TAG"
