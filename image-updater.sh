@@ -12,7 +12,7 @@ if [[ -z "$IMAGE_TAG" ]]; then
   exit 1
 fi
 
-FILE="Docker-compose.yml"
+FILE="docker-compose.yml"
 
 # Check if the file exists
 if [[ ! -f "$FILE" ]]; then
