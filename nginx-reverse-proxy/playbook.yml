@@ -1,6 +1,0 @@
----
-- name: Set up NGINX reverse proxy to Docker swarm
-  hosts: web
-  become: yes
-  roles:
-    - nginx

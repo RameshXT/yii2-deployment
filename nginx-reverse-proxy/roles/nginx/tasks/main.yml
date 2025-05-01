@@ -1,7 +1,0 @@
----
-# Install NGINX on Amazon Linux
-- name: Install NGINX on Amazon Linux
-  package:
-    name: nginx
-    state: present
-  when: ansible_facts['distribution'] == 'Amazon'

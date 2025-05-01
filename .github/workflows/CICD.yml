@@ -108,13 +108,13 @@ jobs:
             docker service ls
 
             # Deployment details
-            echo "🎉🎉 Congratulations! 🎉🎉"
-            echo "Yii 2 Basic application has been successfully deployed on Docker Swarm!"
+            echo "    🎉🎉 Congratulations! 🎉🎉"
+            echo "    Yii 2 Basic application has been successfully deployed on Docker Swarm!"
             echo ""
             echo "    Deployment Details:"
             echo "    Deployment Run Number: #${{ github.run_number }}"
             echo "    Date & Time: $(date)"
-            echo "    Live now: http://${{ secrets.EC2_PUBLIC_IP }}/"
+            echo "    Live now: http://${{ secrets.EC2_IP }}/"
             echo ""
             echo "    You can access the application by clicking the URL above."
             echo "    Enjoy the application, and happy coding! 😎"
