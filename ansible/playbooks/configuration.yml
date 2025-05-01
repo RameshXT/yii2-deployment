@@ -46,15 +46,15 @@
       when: docker_compose_check.rc != 0
       block:
         - name: Get the latest Docker Compose version
-          command: "curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name"
+          shell: curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name
           register: docker_compose_version
           changed_when: false
 
         - name: Download the latest Docker Compose version
           get_url:
-            url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version.stdout }}/docker-compose-{{ ansible_facts.system.arch }}-{{ ansible_facts.system.os }}-{{ ansible_facts.system.version }}"
+            url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version.stdout }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
             dest: /usr/local/bin/docker-compose
-            mode: 'u+x'
+            mode: '0755'
 
         - name: Verify Docker Compose installation
           command: docker-compose --version
@@ -63,7 +63,6 @@
         - name: Output Docker Compose version
           debug:
             msg: "Docker Compose version: {{ docker_compose_version_check.stdout }}"
-
 
     # DOCKER SWARM
     - name: Check if Docker Swarm is initialized
