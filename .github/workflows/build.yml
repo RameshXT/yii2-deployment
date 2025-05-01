@@ -3,7 +3,7 @@ name: Yii 2 CICD Pipeline
 on:
   push:
     branches:
-      - master
+      - none
 
 jobs:
   build_and_deploy:
