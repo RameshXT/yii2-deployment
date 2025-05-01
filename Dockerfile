@@ -1,4 +1,4 @@
-FROM php:8.2-cli-alpine AS builder
+FROM php:8.2-cli-alpine5.6.3-r0 AS builder
 
 RUN apk update && apk add --no-cache \
     libpng-dev \
@@ -21,7 +21,7 @@ RUN composer install --no-dev --no-scripts --ignore-platform-reqs \
     && composer dump-autoload --optimize \
     && composer clear-cache
 
-FROM php:8.2-cli-alpine AS production
+FROM php:8.2-cli-alpine5.6.3-r0 AS production
 
 RUN apk update && apk add --no-cache \
     libpng \
