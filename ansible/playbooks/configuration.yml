@@ -221,12 +221,12 @@
     # CRON JOBS FOR AUTO START
     - name: Ensure crontab is installed
       package:
-        name: cron
+        name: "{{ 'cron' if ansible_os_family == 'Debian' else 'cronie' }}"
         state: present
 
     - name: Ensure crontab service is started and enabled
       systemd:
-        name: cron
+        name: "{{ 'cron' if ansible_os_family == 'Debian' else 'crond' }}"
         state: started
         enabled: yes
 
@@ -243,3 +243,4 @@
         - { name: "Start Nginx", job: "/usr/bin/systemctl start nginx" }
         - { name: "Start Prometheus", job: "/usr/bin/systemctl start prometheus" }
         - { name: "Start Node Exporter", job: "/usr/bin/systemctl start node_exporter" }
+  
