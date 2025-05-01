@@ -67,15 +67,20 @@ jobs:
             echo "IMAGE_TAG is: $IMAGE_TAG"
 
             echo "Updating image tag in Docker-compose.yml.."
-            chmod +x ./image-updater.sh
-            ./image-updater.sh "$IMAGE_TAG"
+            chmod +x ./home/ec2-user/yii2-deployment/image-updater.sh
+            ./home/ec2-user/yii2-deployment/image-updater.sh "$IMAGE_TAG"
             echo "Docker-compose.yml updated successfully."
 
-            echo "Initializing Docker Swarm (if not already).."
-            docker swarm init || echo "Docker Swarm already initialized."
+            echo "Checking if Docker Swarm is already initialized..."
+            if docker info | grep -q 'Swarm: active'; then
+              echo "Docker Swarm is already initialized."
+            else
+              echo "Initializing Docker Swarm..."
+              docker swarm init
+            fi
 
             echo "Deploying stack to Docker Swarm..."
-            docker stack deploy -c Docker-compose.yml yii2-app
+            docker stack deploy -c /home/ec2-user/yii2-deployment/Docker-compose.yml yii2-app
 
             echo "Deployment complete. Showing service status:"
             docker service ls
