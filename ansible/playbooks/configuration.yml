@@ -4,7 +4,7 @@
   become: yes
   tasks:
 
-    # System Update
+    # SYSTEM UPDATE
     - name: System Update
       yum:
         name: "*"
@@ -218,7 +218,7 @@
             state: started
             enabled: yes
 
-    # CRON JOBS FOR AUTO START
+    # CRON
     - name: Ensure crontab is installed
       package:
         name: "{{ 'cron' if ansible_os_family == 'Debian' else 'cronie' }}"
@@ -231,11 +231,13 @@
         enabled: yes
 
     - name: Add cron jobs for service auto-start on reboot
+      become: yes
       cron:
         name: "{{ item.name }}"
         special_time: reboot
         job: "{{ item.job }}"
         state: present
+        user: ec2-user
       loop:
         - { name: "Start Docker", job: "/usr/bin/systemctl start docker" }
         - { name: "Start Docker Compose", job: "docker-compose -f /path/to/docker-compose.yml up -d" }
@@ -243,4 +245,3 @@
         - { name: "Start Nginx", job: "/usr/bin/systemctl start nginx" }
         - { name: "Start Prometheus", job: "/usr/bin/systemctl start prometheus" }
         - { name: "Start Node Exporter", job: "/usr/bin/systemctl start node_exporter" }
-  
