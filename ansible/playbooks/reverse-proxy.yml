@@ -1,0 +1,43 @@
+---
+- name: Set up NGINX Reverse Proxy for Yii 2 App
+  hosts: all
+  become: yes
+
+  tasks:
+
+    - name: Install NGINX if not present
+      yum:
+        name: nginx
+        state: present
+
+    # NGINX REVERSE PROXY CONFIGURATION FILE
+    - name: Create reverse proxy NGINX config file
+      copy:
+        dest: /etc/nginx/conf.d/yii2.conf
+        content: |
+          server {
+              listen 80;
+              server_name _;
+
+              location / {
+                  proxy_pass http://localhost:9090;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+      notify:
+        - Reload NGINX
+
+    - name: Ensure NGINX is started and enabled
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Reload NGINX
+      systemd:
+        name: nginx
+        state: reloaded
