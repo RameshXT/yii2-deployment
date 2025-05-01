@@ -11,12 +11,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && docker-php-ext-install gd \
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && composer --version
+
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock /var/www/html/
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer --version
 
 RUN composer install --no-dev --no-scripts --ignore-platform-reqs --no-autoloader \
     && composer clear-cache
