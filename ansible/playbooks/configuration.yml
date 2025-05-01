@@ -45,19 +45,25 @@
     - name: Install Docker Compose if not present
       when: docker_compose_check.rc != 0
       block:
+        - name: Get the latest Docker Compose version
+          command: "curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name"
+          register: docker_compose_version
+          changed_when: false
+
         - name: Download the latest Docker Compose version
           get_url:
-            url: "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)"
+            url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version.stdout }}/docker-compose-{{ ansible_facts.system.arch }}-{{ ansible_facts.system.os }}-{{ ansible_facts.system.version }}"
             dest: /usr/local/bin/docker-compose
             mode: 'u+x'
 
         - name: Verify Docker Compose installation
           command: docker-compose --version
-          register: docker_compose_version
+          register: docker_compose_version_check
 
         - name: Output Docker Compose version
           debug:
-            msg: "Docker Compose version: {{ docker_compose_version.stdout }}"
+            msg: "Docker Compose version: {{ docker_compose_version_check.stdout }}"
+
 
     # DOCKER SWARM
     - name: Check if Docker Swarm is initialized
@@ -140,7 +146,11 @@
             remote_src: yes
 
         - name: Set ownership for Prometheus files
-          command: chown -R prometheus:prometheus /usr/local/bin/prometheus-2.41.0.linux-amd64
+          file:
+            path: /usr/local/bin/prometheus-2.41.0.linux-amd64
+            owner: prometheus
+            group: prometheus
+            recurse: yes
 
         - name: Create Prometheus systemd service file
           copy:
