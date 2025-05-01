@@ -16,12 +16,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 WORKDIR /var/www/html
 
-COPY composer.json composer.lock /var/www/html/
-
-RUN composer install --no-dev --no-scripts --ignore-platform-reqs --no-autoloader \
-    && composer clear-cache
-
 COPY . /var/www/html
+
+RUN composer install --no-dev --no-scripts --ignore-platform-reqs \
+    && composer dump-autoload --optimize \
+    && composer clear-cache
 
 RUN git config --global --add safe.directory /var/www/html
 
