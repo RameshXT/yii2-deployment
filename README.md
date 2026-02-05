@@ -1,5 +1,4 @@
-Here's the corrected README content in a single copyable snippet:
-markdown<p align="center">
+<p align="center">
     <a href="https://github.com/yiisoft" target="_blank">
         <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
     </a>
@@ -210,4 +209,3 @@ vendor/bin/codecept run functional,unit --coverage --coverage-html --coverage-xm
 ```
 
 You can see code coverage output under the `tests/_output` directory.
-
